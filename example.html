@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>StyleListener Example</title>
+
+        <!-- Include the StyleListener -->
+        <script type="text/javascript" src="StyleListener.min.js"></script>
+
+        <!-- Define some basic styles for this example -->
+        <style type="text/css">
+            body {
+                text-align: center;
+                font-family: Arial, sans-serif;
+            }
+
+            div {
+                max-width: 90%;
+                margin: 10px auto;
+                border: 1px dashed red;
+            }
+
+            h3 {
+                border-bottom: 1px solid #ccc;
+                margin: 0;
+                padding: 10px;
+                text-align: left;
+            }
+
+            #container {
+                border: none;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 10px;
+            }
+
+            #divs, #messages {
+                border: 1px solid #666;
+            }
+
+            #messages {
+                min-height: 100px;
+            }
+
+            #messages p {
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- HTML -->
+        <div id="container">
+            <h1>StyleListener Example</h1>
+
+            <!-- Wrapper to hold the example divs -->
+            <div id="divs"></div>
+
+            <div id="messages">
+                <h3>Messages:</h3>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            // Begin the timeout at 2s
+            var timeout = 2000;
+
+            // Object indexed by div id, with another object containing desired styles
+            var triggers = {
+                'div1': {
+                    'display': 'none'
+                },
+                'div2': {
+                    'width': '200px',
+                    'height': '200px'
+                },
+                'div3': {
+                    'background': 'black',
+                    'color': 'white',
+                    'height': '300px'
+                }
+            };
+
+            // Loop through all ids
+            for (id in triggers) {
+                // Initialize style string
+                var style = '';
+
+                // Set current trigger (style object)
+                var trigger = triggers[id];
+
+                // Insert a div with this id
+                var div = document.createElement('div');
+                div.setAttribute('id', id);
+                div.innerHTML = '<h1>This is '+id+'</h1>';
+                document.getElementById('divs').appendChild(div);
+
+                // Build style string from trigger object
+                for (property in trigger) {
+                    style += property + ': ' + trigger[property] + '; ';
+                }
+
+                // Create a listener for this element
+                var listener = new StyleListener({
+                    elementId: id,
+                    trigger: trigger,
+                    callback: function(l) {
+                        // Create a message once this listener is triggered
+                        var p = document.createElement('p');
+                        p.innerHTML = '#' + l.elementId + ' has style="' + l.getElement().getAttribute('style') + '"';
+                        document.getElementById('messages').appendChild(p);
+                    }
+                });
+
+                // Initialize the listener for this element
+                listener.init();
+
+                // Queue this element to change to the desired style(s) after timeout milliseconds
+                queueStyleChange(id, style, timeout);
+
+                // Double the timeout for the next element
+                timeout *= 2;
+            }
+
+            /**
+             * Wrapper to update the style attribute of an element after a specified amount of time
+             *
+             * @param id
+             * @param style
+             * @param timeout
+             */
+            function queueStyleChange(id, style, timeout) {
+                setTimeout(function() {
+                    document.getElementById(id).setAttribute('style', style);
+                }, timeout);
+            }
+        </script>
+    </body>
+</html>

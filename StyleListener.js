@@ -51,8 +51,8 @@ var StyleListener = (function() {
             // Sanitizing the trigger values (make all strings lower-case for consistency)
             _this.sanitize();
 
-            // Verify the addEventListener method exists
-            if (_this.getElement().addEventListener) {
+            // Verify the browser is not webkit, and the addEventListener method exists
+            if (!_this.isWebkit() && _this.getElement().addEventListener) {
                 // Attach an event listener on the desired element to listen for change(s) in DOM attributes
                 _this.getElement().addEventListener('DOMAttrModified', function (e) { _this.listen(e) }, false);
 
@@ -94,8 +94,10 @@ var StyleListener = (function() {
         var _this = this;
 
         setTimeout(function() {
-            if (_this.getElement()) {
+            if (_this.getElement() && _this.getElement().getAttribute('style')) {
                 _this.checkStyle(_this.getElement().getAttribute('style'));
+            } else {
+                _this.poll();
             }
         }, _this.pollFreq);
     };
@@ -128,6 +130,8 @@ var StyleListener = (function() {
         // Build a style object from the attribute string
         var style = _this.buildStyleFromString(style_attr);
 
+        console.log(window.getComputedStyle(_this.getElement()));
+
         // Default triggered to true
         var triggered = true;
 
@@ -140,7 +144,7 @@ var StyleListener = (function() {
         // If triggered is still true, the element has the desired style(s)
         if (triggered) {
             // Run callback function
-            _this.callback();
+            _this.callback(_this);
 
         // If not triggered yet and we are polling, keep polling
         } else if (_this.isPolling) {
@@ -164,6 +168,18 @@ var StyleListener = (function() {
             typeof _this.callback === 'function' &&
             (typeof _this.pollFreq === 'number' && _this.pollFreq > 0)
         );
+    };
+
+    /**
+     * Detect whether or not current user agent (browser) is webkit (chrome or safari)
+     *
+     * @returns {boolean}
+     */
+    StyleListener.prototype.isWebkit = function() {
+        var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+        var isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+
+        return (isChrome || isSafari);
     };
 
     /**
