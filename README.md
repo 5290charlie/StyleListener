@@ -11,6 +11,9 @@ Javascript class to listen for changes an a specific elements style attribute.
 ```javascript
 // Create listener object
 var listener = new StyleListener({
+	// Polling frequency in milliseconds (fallback for IE8/browsers without addEventListener support)
+	pollFreq: 250,
+
 	// ID of the element to listen for style changes
 	elementId: 'myElement',
 	
