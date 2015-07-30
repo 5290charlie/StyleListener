@@ -1,6 +1,11 @@
 # StyleListener
 Javascript class to listen for changes an a specific elements style attribute.
 
+## Features
+* Cross-browser (works in IE8)
+* No dependencies (does not require jQuery or any other 3rd party JS libraries)
+* Easy to use!
+
 ## Usage
 #### HTML:
 ```html
