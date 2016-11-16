@@ -5,7 +5,7 @@
         <title>StyleListener Example</title>
 
         <!-- Include the StyleListener -->
-        <script type="text/javascript" src="StyleListener.min.js"></script>
+        <script type="text/javascript" src="build/style-listener.min.js"></script>
 
         <!-- Define some basic styles for this example -->
         <style type="text/css">
@@ -77,16 +77,18 @@
                     'background': 'black',
                     'color': 'white',
                     'height': '300px'
-                }
+                },
+                // Listen to any changes to the style attribute
+                'div4': 'border: 1px solid blue;'
             };
 
             // Loop through all ids
             for (id in triggers) {
                 // Initialize style string
-                var style = '';
+                var style = typeof triggers[id] === 'string' ? triggers[id] : '';
 
                 // Set current trigger (style object)
-                var trigger = triggers[id];
+                var trigger = typeof triggers[id] === 'object' ? triggers[id] : {};
 
                 // Insert a div with this id
                 var div = document.createElement('div');

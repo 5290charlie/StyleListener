@@ -12,20 +12,27 @@ var StyleListener = (function() {
         }
 
         // Set member defaults
-        this.isPolling = false;
-        this.pollFreq = 250;
+        this.element   = null;
         this.elementId = '';
-        this.trigger = {};
-        this.callback = function() {};
+        this.trigger   = {};
+        this.pollFreq  = 250;
+        this.isPolling = false;
+        this.prevStyle = '';
+        this.callback  = null;
 
         // Overwrite poll frequency if valid option is provided
         if (typeof options.pollFreq === 'number' && options.pollFreq > 0) {
             this.pollFreq = options.pollFreq;
         }
 
-        // Overwrite element id if a valid option is provided
-        if (typeof options.elementId === 'string') {
+        // Overwrite element if a valid option is provided
+        if (typeof options.element === 'object') {
+            this.element = options.element;
+
+        // Overwrite element using id if a valid option is provided
+        } else if (typeof options.elementId === 'string') {
             this.elementId = options.elementId;
+            this.element = document.getElementById(this.elementId);
         }
 
         // Overwrite trigger object if a valid option is provided
@@ -50,6 +57,9 @@ var StyleListener = (function() {
         if (_this.isValid()) {
             // Sanitizing the trigger values (make all strings lower-case for consistency)
             _this.sanitize();
+
+            // Initialize the style tracking variable "prevStyle"
+            _this.trackStyle();
 
             // Verify the browser is not webkit, and the addEventListener method exists
             if (!_this.isWebkit() && _this.getElement().addEventListener) {
@@ -84,6 +94,17 @@ var StyleListener = (function() {
         for (prop in trigger) {
             _this.trigger[prop.toLowerCase()] = (typeof trigger[prop] === 'string' ? trigger[prop].toLowerCase() : trigger[prop]);
         }
+    };
+
+    /**
+     * Set the tracking variable "prevStyle" to the current style attribute value
+     */
+    StyleListener.prototype.trackStyle = function() {
+        // Maintain a version of the listener as _this ("this" can change scope!)
+        var _this = this;
+
+        // Load default (initial style attribute content)
+        _this.prevStyle = _this.getElement().getAttribute('style');
     };
 
     /**
@@ -127,13 +148,11 @@ var StyleListener = (function() {
         // Maintain a version of the listener as _this ("this" can change scope!)
         var _this = this;
 
+        // Default triggered to difference in style attribute
+        var triggered = _this.prevStyle != _this.getElement().getAttribute('style');
+
         // Build a style object from the attribute string
         var style = _this.buildStyleFromString(style_attr);
-
-        console.log(window.getComputedStyle(_this.getElement()));
-
-        // Default triggered to true
-        var triggered = true;
 
         // Loop through all styles defined in the trigger
         for (prop in _this.trigger) {
@@ -146,8 +165,12 @@ var StyleListener = (function() {
             // Run callback function
             _this.callback(_this);
 
-        // If not triggered yet and we are polling, keep polling
-        } else if (_this.isPolling) {
+            // Update the style attribute tracking variable "prevStyle"
+            _this.trackStyle();
+        }
+
+        // If we are polling, keep polling
+        if (_this.isPolling) {
             _this.poll();
         }
     };
@@ -225,10 +248,7 @@ var StyleListener = (function() {
      * @returns {Element}
      */
     StyleListener.prototype.getElement = function() {
-        // Maintain a version of the listener as _this ("this" can change scope!)
-        var _this = this;
-
-        return document.getElementById(_this.elementId);
+        return this.element;
     };
 
     return StyleListener;

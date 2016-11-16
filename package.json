@@ -1,0 +1,26 @@
+{
+  "name": "style-listener",
+  "version": "1.0.0",
+  "description": "Listen to DOM style attribute changes",
+  "main": "build/style-listener.min.js",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "load-grunt-tasks": "^3.5.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/5290charlie/StyleListener.git"
+  },
+  "author": "Charlie McClung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/5290charlie/StyleListener/issues"
+  },
+  "homepage": "https://github.com/5290charlie/StyleListener#readme"
+}
