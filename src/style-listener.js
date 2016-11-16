@@ -19,6 +19,8 @@ var StyleListener = (function() {
         this.isPolling = false;
         this.prevStyle = '';
         this.callback  = null;
+        this.timeout   = null;
+        this.listener  = null;
 
         // Overwrite poll frequency if valid option is provided
         if (typeof options.pollFreq === 'number' && options.pollFreq > 0) {
@@ -44,6 +46,9 @@ var StyleListener = (function() {
         if (typeof options.callback === 'function') {
             this.callback = options.callback;
         }
+
+        // Init this StyleListener instance
+        this.init();
     }
 
     /**
@@ -61,10 +66,24 @@ var StyleListener = (function() {
             // Initialize the style tracking variable "prevStyle"
             _this.trackStyle();
 
+            // Create the function to be bound to eventListener or polling
+            _this.createListener();
+        }
+    }
+
+    /**
+     * Start the listener
+     */
+    StyleListener.prototype.start = function() {
+        // Maintain a version of the listener as _this ("this" can change scope!)
+        var _this = this;
+
+        // Verify the validity of the listener settings
+        if (_this.isValid()) {
             // Verify the browser is not webkit, and the addEventListener method exists
             if (!_this.isWebkit() && _this.getElement().addEventListener) {
                 // Attach an event listener on the desired element to listen for change(s) in DOM attributes
-                _this.getElement().addEventListener('DOMAttrModified', function (e) { _this.listen(e) }, false);
+                _this.getElement().addEventListener('DOMAttrModified', _this.listener);
 
             // The browser does not support event listeners, use setTimeout polling instead
             } else {
@@ -74,6 +93,29 @@ var StyleListener = (function() {
                 // Begin polling for changes
                 _this.poll();
             }
+        }
+    };
+
+    /**
+     * Stop the listener
+     */
+    StyleListener.prototype.stop = function() {
+        // Maintain a version of the listener as _this ("this" can change scope!)
+        var _this = this;
+
+        // Verify the browser is not webkit, and the addEventListener method exists
+        if (!_this.isWebkit() && _this.getElement().addEventListener) {
+            console.log('removing event listener');
+            // Attach an event listener on the desired element to listen for change(s) in DOM attributes
+            _this.getElement().removeEventListener('DOMAttrModified', _this.listener);
+
+        // The browser does not support event listeners, use setTimeout polling instead
+        } else if (_this.isPolling) {
+            // Clear polling timeout
+            clearTimeout(_this.timeout);
+
+            // Set polling flag to false
+            _this.isPolling = false;
         }
     };
 
@@ -108,13 +150,25 @@ var StyleListener = (function() {
     };
 
     /**
+     * Create the function to be bound to eventListener or polling
+     */
+    StyleListener.prototype.createListener = function() {
+        // Maintain a version of the listener as _this ("this" can change scope!)
+        var _this = this;
+
+        _this.listener = function(e) {
+            _this.listen(e);
+        };
+    };
+
+    /**
      * Poll for changes with recursive timeouts instead of listening
      */
     StyleListener.prototype.poll = function() {
         // Maintain a version of the listener as _this ("this" can change scope!)
         var _this = this;
 
-        setTimeout(function() {
+        _this.timeout = setTimeout(function() {
             if (_this.getElement() && _this.getElement().getAttribute('style')) {
                 _this.checkStyle(_this.getElement().getAttribute('style'));
             } else {
